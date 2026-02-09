@@ -4,9 +4,11 @@ __pycache__/
 *$py.class
 *.so
 .Python
-*.sqlite
 *.sqlite-journal
 *.log
+
+# Allow main database file for Streamlit Cloud
+!CRICKET_PERF.sqlite
 
 # Virtual environments
 venv/
