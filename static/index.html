@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cricket Stats Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #555;
+        }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .results {
+            margin-top: 30px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border-left: 4px solid #c33;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            overflow-x: auto;
+            display: block;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+        }
+
+        tbody {
+            display: block;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #666;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏏 Cricket Stats Tracker</h1>
+            <p class="subtitle">Explore cricket player statistics from around the world</p>
+        </header>
+
+        <div class="card">
+            <h2 class="section-title">View Countries</h2>
+            <button class="btn" onclick="loadCountries()">Load All Countries</button>
+            <div id="countries-results" class="results"></div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Search Players</h2>
+            <div class="form-group">
+                <label for="country-select">Country</label>
+                <select id="country-select">
+                    <option value="">Select a country...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="match-type-select">Match Type</label>
+                <select id="match-type-select">
+                    <option value="">All</option>
+                    <option value="odi">ODI</option>
+                    <option value="t20">T20</option>
+                </select>
+            </div>
+            <button class="btn" onclick="searchPlayers()">Search Players</button>
+            <div id="players-results" class="results"></div>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">Player Statistics</h2>
+            <div class="form-group">
+                <label for="stats-country-select">Country</label>
+                <select id="stats-country-select">
+                    <option value="">Select a country...</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="play-type-select">Play Type</label>
+                <select id="play-type-select">
+                    <option value="batting">Batting</option>
+                    <option value="bowling">Bowling</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="stats-match-type-select">Match Type</label>
+                <select id="stats-match-type-select">
+                    <option value="odi">ODI</option>
+                    <option value="t20">T20</option>
+                </select>
+            </div>
+            <button class="btn" onclick="loadStats()">Load Statistics</button>
+            <div id="stats-results" class="results"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+
+        // Load countries into select dropdowns
+        async function loadCountriesForSelect() {
+            try {
+                const response = await fetch(`${API_BASE}/api/v2/countries/all`);
+                const data = await response.json();
+                
+                if (data.countries) {
+                    const countrySelect = document.getElementById('country-select');
+                    const statsCountrySelect = document.getElementById('stats-country-select');
+                    
+                    data.countries.forEach(country => {
+                        const option1 = document.createElement('option');
+                        option1.value = country.country;
+                        option1.textContent = country.country.charAt(0).toUpperCase() + country.country.slice(1).replace(/-/g, ' ');
+                        countrySelect.appendChild(option1);
+                        
+                        const option2 = document.createElement('option');
+                        option2.value = country.country;
+                        option2.textContent = country.country.charAt(0).toUpperCase() + country.country.slice(1).replace(/-/g, ' ');
+                        statsCountrySelect.appendChild(option2);
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading countries:', error);
+            }
+        }
+
+        // Load all countries
+        async function loadCountries() {
+            const resultsDiv = document.getElementById('countries-results');
+            resultsDiv.innerHTML = '<div class="loading">Loading countries...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/v2/countries/all`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    resultsDiv.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.countries && data.countries.length > 0) {
+                    const table = createTable(data.countries);
+                    resultsDiv.innerHTML = table;
+                } else {
+                    resultsDiv.innerHTML = '<div class="empty-state">No countries found</div>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Search players
+        async function searchPlayers() {
+            const country = document.getElementById('country-select').value;
+            const matchType = document.getElementById('match-type-select').value;
+            const resultsDiv = document.getElementById('players-results');
+            
+            if (!country) {
+                resultsDiv.innerHTML = '<div class="error">Please select a country</div>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<div class="loading">Searching players...</div>';
+            
+            try {
+                let url = `${API_BASE}/api/v2/countries?name=${encodeURIComponent(country)}`;
+                if (matchType) {
+                    url += `&match_type=${matchType}`;
+                }
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    resultsDiv.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.players && data.players.length > 0) {
+                    const table = createTable(data.players);
+                    resultsDiv.innerHTML = `<p style="margin-bottom: 10px; color: #666;">Found ${data.players.length} player(s)</p>${table}`;
+                } else {
+                    resultsDiv.innerHTML = '<div class="empty-state">No players found</div>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Load statistics
+        async function loadStats() {
+            const country = document.getElementById('stats-country-select').value;
+            const playType = document.getElementById('play-type-select').value;
+            const matchType = document.getElementById('stats-match-type-select').value;
+            const resultsDiv = document.getElementById('stats-results');
+            
+            if (!country) {
+                resultsDiv.innerHTML = '<div class="error">Please select a country</div>';
+                return;
+            }
+            
+            resultsDiv.innerHTML = '<div class="loading">Loading statistics...</div>';
+            
+            try {
+                const url = `${API_BASE}/api/v2/get_stats/countries?name=${encodeURIComponent(country)}&play_type=${playType}&match_type=${matchType}`;
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    resultsDiv.innerHTML = `<div class="error">${data.error}</div>`;
+                    return;
+                }
+                
+                if (data.stats && data.stats.length > 0) {
+                    const table = createTable(data.stats);
+                    resultsDiv.innerHTML = `<p style="margin-bottom: 10px; color: #666;">Found ${data.stats.length} record(s)</p>${table}`;
+                } else {
+                    resultsDiv.innerHTML = '<div class="empty-state">No statistics found</div>';
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Create table from data
+        function createTable(data) {
+            if (!data || data.length === 0) {
+                return '<div class="empty-state">No data available</div>';
+            }
+            
+            const keys = Object.keys(data[0]);
+            let html = '<table><thead><tr>';
+            
+            keys.forEach(key => {
+                html += `<th>${key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            data.forEach(row => {
+                html += '<tr>';
+                keys.forEach(key => {
+                    html += `<td>${row[key] || '-'}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            return html;
+        }
+
+        // Initialize on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadCountriesForSelect();
+        });
+    </script>
+</body>
+</html>
